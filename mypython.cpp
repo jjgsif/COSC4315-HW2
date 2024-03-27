@@ -2,7 +2,10 @@
 #include <fstream>
 #include <string>
 #include <vector>
-#include <algorithm>
+#include <stdlib.h>
+
+#include "interpret.cpp"
+
 
 using namespace std;
 
@@ -13,47 +16,68 @@ using namespace std;
 
 void runFile(char*);
 void run(string);
-// void runFile(char*, char*);
-// void runPrompt();
+void console();
 
 
 int main(int argc, char* argv[]){
     
-    switch(argc){
+    switch (argc){
+        case 1: console(); break;
         case 2: runFile(argv[1]); break;
+        default: cout << "Usage: ./mypython [filePath]" << endl; break;
+    }
+
+    //freeVM();
+
+    return 0;
+}
+
+void console(){
+    string line;
+
+    for(;;){
+        cout <<"> ";
+        if(!getline(cin, line)){
+            cout << "\n";
+            break;
+        }
+        //interpret(line);
     }
 }
 
-void runFile(char* inputFile){
-    ifstream input(inputFile, ios::binary | ios::ate);
-
-    if(!input.is_open()){
-        cerr << inputFile << " not found. Exiting" << endl;
-        return;
+void runFile(char* input){
+    ifstream source(input, ios::binary | ios::ate);
+    
+    if(!source.is_open()){
+        cout << input << " not found. Exiting" << endl;
+        exit(6);
     }
 
-    streamsize size = input.tellg();
-    input.seekg(0, ios_base::beg);
+    streamsize size = source.tellg();
+    source.seekg(0, ios_base::beg);
 
-    vector<char> buffer(size);
+    vector<char> buffer(size+1);
 
-    if(!input.read(buffer.data(), size)){
-        cerr << "Error reading " << inputFile <<" exiting..." << endl;
-        return;
-    }
-
+     if(!source.read(buffer.data(), size)){
+        cerr << "Error reading " << input <<" exiting..." << endl;
+        exit(5);
+    } 
     string joinedVector = "";
+    buffer[size] = '\0';
 
     for(int i = 0; i < buffer.size(); i++){
         joinedVector+= buffer[i];
     }
-    
-    run(joinedVector);
 
-    return;
+    source.close();
     
+    InterpretResult result = interpret(joinedVector);
+
+    buffer.erase(buffer.begin(), buffer.end());
+
+    if(result == InterpretResult::INTERPRET_COMPILE_ERR) exit(3);
+    if(result == InterpretResult::INTERPRET_RUNTIME_ERR) exit(4);
+
 }
 
-void run(string fileContents){
-    
-}
+

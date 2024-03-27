@@ -5,6 +5,7 @@
         "string_view": "cpp",
         "*.tcc": "cpp",
         "unordered_map": "cpp",
-        "vector": "cpp"
+        "vector": "cpp",
+        "iostream": "cpp"
     }
 }
