@@ -33,7 +33,7 @@ int main(int argc, char* argv[]){
 }
 
 void console(){
-    string line;
+    string line = "";
 
     for(;;){
         cout <<"> ";
@@ -41,7 +41,11 @@ void console(){
             cout << "\n";
             break;
         }
-        //interpret(line);
+        vector<char> lineV(line.size()+1);
+        memcpy(&lineV.front(), line.c_str(), line.size()+1);
+        char* cLine = lineV.data();
+
+        interpret(cLine);
     }
 }
 
@@ -62,11 +66,11 @@ void runFile(char* input){
         cerr << "Error reading " << input <<" exiting..." << endl;
         exit(5);
     } 
-    string joinedVector = "";
+    char* joinedVector = new char[size+1];
     buffer[size] = '\0';
 
     for(int i = 0; i < buffer.size(); i++){
-        joinedVector+= buffer[i];
+        joinedVector[i] = buffer[i];
     }
 
     source.close();
