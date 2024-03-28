@@ -9,8 +9,8 @@
 
 using namespace std;
 
-
-
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++11-extensions"
 
 
 
@@ -83,5 +83,8 @@ void runFile(char* input){
     if(result == InterpretResult::INTERPRET_RUNTIME_ERR) exit(4);
 
 }
+
+
+#pragma GCC diagnostic pop
 
 
