@@ -107,12 +107,11 @@ static void skipSpace(){
 }
 
 static Token stringToken(){
-    while (*scanner.current != '"' && !isAtEnd()){
-        if(*scanner.current == '\n') scanner.line++;
+    while (*scanner.current != '"' && !isAtEnd() && *scanner.current != '\n'){
         scanner.current++;
     }
     char* openString = "Open String";
-    if(isAtEnd()) return ErrorToken(openString);
+    if(isAtEnd() || *scanner.current == '\n') return ErrorToken(openString);
 
     scanner.current++;
     return makeToken(TokenType::TOKEN_STRING);

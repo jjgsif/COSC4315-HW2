@@ -3,6 +3,7 @@ scale = 2
 def multiply(x, y):
 	return x * y
 
+
 def conditionalAddAndMultiply(x, y):
     scale = 3
     if y > 5:
