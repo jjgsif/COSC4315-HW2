@@ -1,6 +1,7 @@
 #include <string>
 #include <stdlib.h>
 #include "scanner.cpp"
+#include "chunk.cpp"
 
 
 #pragma GCC diagnostic push
@@ -119,8 +120,18 @@ static void unary(bool canAssign){
 
 }
 
+ParseRule rules[] = {
+    [TokenType::TOKEN_LEFT_PAREN] = {grouping, NULL, PREC_NONE},
+    [TokenType::TOKEN_RIGHT_PAREN] = {NULL, NULL, PREC_NONE},
+    
+};
+
 static void parsePrecedence(Precedence precedence){
 
+}
+
+static ParseRule* getRule(TokenType type){
+    return &rules[type];
 }
 
 static uint8_t makeConstant(Value value){
@@ -136,6 +147,10 @@ static uint8_t makeConstant(Value value){
 static void endCompiler(){
     emitReturn();
 }
+
+static void expression();
+static ParseRule* getRule(TokenType type);
+static void parsePrecedence(Precedence precedence);
 
 static void binary(){
     TokenType operatorType = parser.previous.type;
@@ -154,7 +169,7 @@ static void binary(){
 }
 
 static void expression(){
-    parsePrecedence(PREC_ASSIGNMENT)
+    parsePrecedence(PREC_ASSIGNMENT);
 }
 
 static void grouping(bool canAssign){
