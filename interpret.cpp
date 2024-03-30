@@ -1,6 +1,5 @@
 #include <string>
 #include "scanner.cpp"
-#include "vm.cpp"
 
 
 #pragma GCC diagnostic push
@@ -26,6 +25,8 @@ static void advance() {
     for(;;){
         parser.current = scanToken();
         if(parser.current.type != TokenType::TOKEN_ERROR) break;
+
+        errorAtCurrent(parser.current.start);
     }
 }
 
@@ -34,21 +35,9 @@ static void advance() {
 bool compile(char* sourceCode, Chunk* chunk){
     initScanner(sourceCode);
     
-    for (;;) {
-        int line = -1;
-        Token token = scanToken();
-        if (token.line != line) {
-            printf("%4d ", token.line);
-            line = token.line;
-        } else {
-            printf(" | ");
-        }
-        printf("%d'%.*s'\n", token.type, token.length, token.start); 
-        if (token.type == TokenType::TOKEN_EOF) break;
-    }
-
-    delete sourceCode;
-    return true;
+    advance();
+    expression();
+    consume(TOKEN_EOF, "Expect end of expression.");
 }
 #pragma GCC diagnostic pop
 

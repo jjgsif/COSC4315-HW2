@@ -4,7 +4,7 @@
 #include <vector>
 #include <stdlib.h>
 
-#include "interpret.cpp"
+#include "vm.cpp"
 
 
 using namespace std;
@@ -20,36 +20,36 @@ void console();
 
 
 int main(int argc, char* argv[]){
-    Chunk chunk;
-    writeChunk(&chunk, OP_NEGATE, 123);
+    initVM();
 
-    // switch (argc){
-    //     case 1: console(); break;
-    //     case 2: runFile(argv[1]); break;
-    //     default: cout << "Usage: ./mypython [filePath]" << endl; break;
-    // }
+    
 
-    // //freeVM();
 
-    // return 0;
+    switch (argc){
+        case 1: console(); break;
+        //case 2: runFile(argv[1]); break;
+        default: cout << "Usage: ./mypython [filePath]" << endl; break;
+    }
+
+    freeVM();
+
+    return 0;
 }
 
-// void console(){
-//     string line = "";
+void console(){
+    char line[1024];
 
-//     for(;;){
-//         cout <<"> ";
-//         if(!getline(cin, line)){
-//             cout << "\n";
-//             break;
-//         }
-//         vector<char> lineV(line.size()+1);
-//         memcpy(&lineV.front(), line.c_str(), line.size()+1);
-//         char* cLine = lineV.data();
+    for(;;){
+        cout << "> ";
 
-//         interpret(cLine);
-//     }
-// }
+        if(!fgets(line, sizeof(line), stdin)) {
+            cout << "\n";
+            break;
+        }
+
+        interpret(line);
+    }
+}
 
 // void runFile(char* input){
 //     ifstream source(input, ios::binary | ios::ate);
