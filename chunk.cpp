@@ -1,11 +1,13 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 
 using namespace std;
 
 enum OpCode {
     OP_RETURN,
-    OP_CONSTANT
+    OP_CONSTANT, 
+    OP_NEGATE
 };
 
 typedef double Value;
@@ -21,10 +23,16 @@ struct ValueArray{
 struct Chunk{
     int count;
     int capacity;
-    u_int8_t* code;
+    uint8_t* code;
     int* lines;
     ValueArray constants;
 };
+
+void initValueArray(ValueArray* array){
+    array->values = nullptr;
+    array->capacity = 0;
+    array->count = 0;
+}
 
 void initChunk(Chunk* chunk){
     chunk->count = 0;
@@ -35,7 +43,7 @@ void initChunk(Chunk* chunk){
 }
 
 static int constantInstruction(const char* name, Chunk* chunk, int offset){
-    u_int8_t constant = chunk->code[offset+1];
+    uint8_t constant = chunk->code[offset+1];
     printf("%-16s %d '", name, constant);
     printf("%g",chunk->constants.values[constant]);
     printf("'\n'");
@@ -63,19 +71,20 @@ static int constantInstruction(const char* name, Chunk* chunk, int offset){
     return result;
  }
 
-void writeChunk(Chunk* chunk, u_int8_t byte, int line){
+void writeChunk(Chunk* chunk, uint8_t byte, int line){
     if (chunk->capacity < chunk->count + 1) {
         int oldCapacity = chunk->capacity;
         chunk->capacity = GROW_CAPACITY(oldCapacity);
-        chunk->code = GROW_ARRAY(u_int8_t, chunk->code, oldCapacity, chunk->capacity);
+        chunk->code = GROW_ARRAY(uint8_t, chunk->code, oldCapacity, chunk->capacity);
         chunk->lines = GROW_ARRAY(int, chunk->lines, oldCapacity, chunk->capacity);
     }
+    chunk->lines[chunk->count] = line;
     chunk->code[chunk->count] = byte;
     chunk->count++;
 }
 
 void freeChunk(Chunk* chunk){
-    FREE_ARRAY(u_int8_t, chunk->code, chunk->capacity);
+    FREE_ARRAY(uint8_t, chunk->code, chunk->capacity);
     FREE_ARRAY(int, chunk->lines, chunk->capacity);
     initChunk(chunk);
 }
@@ -88,7 +97,7 @@ static int simpleInstruction(const char* name, int offset) {
 
 int disassembleInstruction(Chunk* chunk, int offset){
     printf("%04d ", offset);
-    u_int8_t instruction = chunk->code[offset];
+    uint8_t instruction = chunk->code[offset];
     switch (instruction) {
         case OP_CONSTANT:
         return constantInstruction("OP_CONSTANT", chunk, offset);
@@ -107,11 +116,7 @@ void disassembleChunk(Chunk* chunk, char* name){
     }
 }
 
-void initValueArray(ValueArray* array){
-    array->values = nullptr;
-    array->capacity = 0;
-    array->count = 0;
-}
+
 
 void writeValueArray(ValueArray* array, Value value){
     if(array->capacity < array->count + 1){

@@ -1,6 +1,6 @@
 #include <string>
 #include "scanner.cpp"
-#include "chunk.cpp"
+#include "vm.cpp"
 
 
 #pragma GCC diagnostic push
@@ -8,9 +8,7 @@
 
 using namespace std;
 
-enum class InterpretResult{
-    INTERPRET_OK, INTERPRET_COMPILE_ERR, INTERPRET_RUNTIME_ERR
-};
+
 
 struct Parser{
     Token current;
@@ -20,9 +18,7 @@ struct Parser{
 
 Parser parser;
 
-static void errorAtCurrent(char* message){
-    errorAt(&parser.current, message);
-}
+
 
 static void advance() {
     parser.previous = parser.current;
@@ -30,8 +26,6 @@ static void advance() {
     for(;;){
         parser.current = scanToken();
         if(parser.current.type != TokenType::TOKEN_ERROR) break;
-
-        errorAtCurrent(parser.current.start);
     }
 }
 
@@ -56,23 +50,5 @@ bool compile(char* sourceCode, Chunk* chunk){
     delete sourceCode;
     return true;
 }
-
-InterpretResult interpret( char* sourceCode){
-    Chunk chunk;
-    initChunk(&chunk);
-
-    if(!compile(sourceCode, &chunk)){
-        freeChunk(&chunk);
-        return InterpretResult::INTERPRET_COMPILE_ERR;
-    }
-
-    vm.chunk = &chunk;
-
-    InterpretResult result = run();
-
-    freeChunk(&chunk);
-    return result;
-}
-
 #pragma GCC diagnostic pop
 
