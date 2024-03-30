@@ -31,6 +31,14 @@ typedef enum{
     PREC_PRIMARY
 }Precedence;
 
+typedef void (*ParseFn)();
+
+typedef struct {
+    ParseFn prefix;
+    ParseFn infix;
+    Precedence precedence;
+} ParseRule;
+
 Parser parser;
 
 Chunk* compilingChunk;
@@ -127,6 +135,22 @@ static uint8_t makeConstant(Value value){
 
 static void endCompiler(){
     emitReturn();
+}
+
+static void binary(){
+    TokenType operatorType = parser.previous.type;
+
+    ParseRule* rule = getRule(operatorType);
+    parsePrecedence((Precedence)(rule->precedence + 1));
+
+    switch (operatorType){
+        case TokenType::TOKEN_PLUS:     emitByte(OP_ADD); break;
+        case TokenType::TOKEN_MINUS:     emitByte(OP_SUBTRACT); break;
+        case TokenType::TOKEN_STAR:     emitByte(OP_MULTIPLY); break;
+        case TokenType::TOKEN_SLASH:     emitByte(OP_DIVIDE); break;
+        default:
+            return;
+    }
 }
 
 static void expression(){
