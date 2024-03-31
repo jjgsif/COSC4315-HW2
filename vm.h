@@ -13,6 +13,8 @@ struct VM {
     uint8_t* ip;
     Value stack[256];
     Value* stackTop;
+
+    Obj* objects;
 };
 
 

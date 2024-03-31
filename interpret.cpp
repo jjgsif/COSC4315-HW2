@@ -24,7 +24,7 @@ ParseRule rules[] = {
  [TokenType::TOKEN_LESS] =  {NULL, binary, PREC_COMPARISON},
  [TokenType::TOKEN_LESS_EQUAL] =  {NULL, binary, PREC_COMPARISON},
  [TokenType::TOKEN_IDENTIFIER] = {NULL, NULL, PREC_NONE},
- [TokenType::TOKEN_STRING] = {NULL, NULL, PREC_NONE},
+ [TokenType::TOKEN_STRING] = {stringI, NULL, PREC_NONE},
  [TokenType::TOKEN_NUMBER] = {numberI, NULL, PREC_NONE},
  [TokenType::TOKEN_AND] = {NULL, NULL, PREC_NONE},
  [TokenType::TOKEN_CLASS] = {NULL, NULL, PREC_NONE},
@@ -119,6 +119,12 @@ static void literal() {
  }
 }
 
+
+
+static void stringI(){
+    emitConstant(OBJ_VAL(copyString(parser.previous.start + 1, parser
+    .previous.length - 2)));
+}
 
 void binary(){
     TokenType operatorType = parser.previous.type;

@@ -62,6 +62,7 @@ static void expression();
 static void error(const char* message);
 static uint8_t makeConstant(Value value);
 static void errorAtCurrent(const char* message);
+static void stringI();
 
 
 
