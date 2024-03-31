@@ -1,5 +1,6 @@
-#include "value.h"
-
+#include "value.h" //object.h
+#include "vm.h" // vm.h
+#include "assignment.h" //table.h
 
 using namespace std;
 
@@ -33,6 +34,8 @@ void freeValueArray(ValueArray* array){
 
 ObjString* copyString(char* chars, int length){
     uint32_t hash = hashString(chars, length);
+    ObjString* interned = tableFindString(&vm.strings, chars, length, hash);
+    if(interned != nullptr) return interned;
     char* cString = ALLOCATE(char, length+1);
     memcpy(cString, chars, length);
     cString[length] = '\0';
@@ -56,16 +59,23 @@ ObjString* allocateString(char* string, int length, uint32_t hash){
     stringOut->chars = string;
     stringOut->hash = hash;
 
+    tableSet(&vm.strings, stringOut, NIL_VAL);
+
     return stringOut;
 }
 
 ObjString* takeString(char* chars, int length){
     uint32_t hash = hashString(chars, length);
+    ObjString* interned = tableFindString(&vm.strings, chars, length, hash);
+    if(interned !=nullptr){
+        FREE_ARRAY(char, chars, length +1);
+        return interned;
+    }   
     return allocateString(chars, length, hash);
 }
 
 static Obj* allocateObject(size_t size, ObjType type) {
- Obj* object = (Obj*)reallocate(NULL, 0, size);
+ Obj* object = (Obj*)reallocate(nullptr, 0, size);
  object->type = type;
  return object;
 }
@@ -91,11 +101,7 @@ bool valuesEqual(Value a, Value b) {
  case VAL_BOOL: return AS_BOOL(a) == AS_BOOL(b);
  case VAL_NIL: return true;
  case VAL_NUMBER: return AS_NUMBER(a) == AS_NUMBER(b);
- case VAL_OBJ:{
-    ObjString* aString = AS_STRING(a);
-    ObjString* bString = AS_STRING(b);
-    return (aString->length == bString->length && memcmp(aString->chars, bString->chars,aString->length)==0);
- }
+ case VAL_OBJ: return AS_OBJ(a) == AS_OBJ(b);
  default:
  return false; // Unreachable.
  }
