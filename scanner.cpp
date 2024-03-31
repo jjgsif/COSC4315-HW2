@@ -3,13 +3,11 @@
 #include <string.h>
 #include <iostream>
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wc++11-extensions"
-#pragma GCC diagnostic ignored "-Wc++11-compat-deprecated-writable-strings"
+
 
 using namespace std;
 
-enum class TokenType{
+enum TokenType{
  // Single-character tokens.
  TOKEN_LEFT_PAREN, TOKEN_RIGHT_PAREN,
  TOKEN_LEFT_BRACE, TOKEN_RIGHT_BRACE,
@@ -24,8 +22,8 @@ enum class TokenType{
  TOKEN_IDENTIFIER, TOKEN_STRING, TOKEN_NUMBER,
  // Keywords.
  TOKEN_AND, TOKEN_CLASS, TOKEN_ELSE, TOKEN_FALSE,
- TOKEN_FOR, TOKEN_DEF, TOKEN_IF, TOKEN_IS, TOKEN_OR, TOKEN_ELIF,
- TOKEN_PRINT, TOKEN_RETURN, TOKEN_FINALLY, TOKEN_THIS, TOKEN_NONE,
+ TOKEN_FOR, TOKEN_DEF, TOKEN_IF, TOKEN_IS, TOKEN_OR,
+ TOKEN_PRINT, TOKEN_RETURN, TOKEN_THIS, TOKEN_NONE,
  TOKEN_TRUE, TOKEN_VAR, TOKEN_WHILE, TOKEN_IN,
  TOKEN_ERROR, 
  TOKEN_EOF
@@ -142,10 +140,6 @@ static TokenType keywordToken(int start, int length, char* restOfKeyword, TokenT
 
 static TokenType keywordTokenE(int start, int length){
     if (scanner.current - scanner.start == start + length &&
-    memcmp(scanner.start + start, "lif", length) == 0) {
-    return TokenType::TOKEN_ELIF;
-    }
-    if (scanner.current - scanner.start == start + length &&
     memcmp(scanner.start + start, "lse", length) == 0) {
     return TokenType::TOKEN_ELSE;
     }
@@ -167,7 +161,6 @@ static Token identifier(){
                 switch (scanner.start[1]){
                     case 'a': return makeToken(keywordToken(2,3,"lse", TokenType::TOKEN_FALSE));
                     case 'o': return makeToken(keywordToken(1,2,"or", TokenType::TOKEN_FOR));
-                    case 'i': return makeToken(keywordToken(1,6,"inally", TokenType::TOKEN_FINALLY));
                 }
             }
             break;
@@ -229,4 +222,3 @@ static Token scanToken(){
     return ErrorToken(uC);
 }
 
-#pragma GCC diagnostic pop
