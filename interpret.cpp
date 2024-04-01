@@ -242,13 +242,11 @@ static void expressionStatement() {
 static void statement() {
  if (match(TOKEN_PRINT)) {
     printStatement();
- } else{
+ } else if(!match(TOKEN_EOF) && !match(TOKEN_ENDLINE)){
+    printStatement();
+ }else{
     expressionStatement();
  }
- if(!match(TOKEN_EOF) && !match(TOKEN_ENDLINE)){
-    printStatement();
- }
- 
 }
 
 static void defineVariable(uint8_t global) {
@@ -267,11 +265,11 @@ static void expression(){
 }
 
 static void varDeclaration(){
-    uint8_t global = identifierConstant(&parser.current);
+    uint8_t global = identifierConstant(&parser.previous);
     
     if(match(TOKEN_EQUAL)){
         expression();
-    } else {
+    }else {
         emitByte(OP_NIL);
     }
     consume(TOKEN_ENDLINE,"Error");
@@ -296,8 +294,6 @@ bool compile(char* sourceCode, Chunk* chunk){
     parser.hadError = false;
     parser.panicMode = false;
     advance();
-    // expression();
-    // consume(TokenType::TOKEN_ENDLINE, "Expect end of expression.");
     while (!match(TOKEN_EOF)) {
         declaration();
     }

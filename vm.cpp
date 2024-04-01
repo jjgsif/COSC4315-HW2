@@ -232,15 +232,22 @@ static InterpretResult run()
             break;
         }
         case OP_DEFINE_GLOBAL: {
-            vm.variables.insert(pair<ObjString*, Value>(AS_STRING(vm.chunk->constants.values[*vm.ip++]), peek(0))); pop(); break;
+            string c = AS_CSTRING(vm.chunk->constants.values[*vm.ip++]);
+            try{
+            vm.variables.at(c) = peek(0);
+            pop();
+            break;
+            } catch (exception e){
+                vm.variables.insert(pair<string, Value>(c, peek(0)));
+            }
         }
         case OP_GET_GLOBAL:{
-            ObjString* v = AS_STRING(READ_CONSTANT());
+            string v = AS_CSTRING(vm.chunk->constants.values[*vm.ip++]);
             try{
                 push(vm.variables.at(v));
                 break;
             }catch (exception e){
-                runtimeError("Undefined Variable name: ", v->chars);
+                runtimeError("Undefined Variable name: ", v.c_str());
                 return INTERPRET_RUNTIME_ERR;
             }
         }

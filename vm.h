@@ -16,7 +16,7 @@ struct VM {
     Value* stackTop;
 
     Obj* objects;
-    map<ObjString*, Value> variables;
+    map<string, Value> variables;
 };
 
 

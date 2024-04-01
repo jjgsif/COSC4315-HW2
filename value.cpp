@@ -1,12 +1,6 @@
-<<<<<<< Updated upstream
-#include "value.h" //object.h
-#include "vm.h" // vm.h
-#include "assignment.h" //table.h
-=======
 #include "value.h"
 
 #include <cstring>
->>>>>>> Stashed changes
 
 using namespace std;
 
@@ -39,9 +33,6 @@ void freeValueArray(ValueArray* array){
 }
 
 ObjString* copyString(char* chars, int length){
-    uint32_t hash = hashString(chars, length);
-    ObjString* interned = tableFindString(&vm.strings, chars, length, hash);
-    if(interned != nullptr) return interned;
     char* cString = ALLOCATE(char, length+1);
     memcpy(cString, chars, length);
     cString[length] = '\0';
@@ -50,37 +41,17 @@ ObjString* copyString(char* chars, int length){
     return allocateString(cString, length);
 }
 
-uint32_t hashString(const char* key, int length) {
- uint32_t hash = 2166136261u;
- for (int i = 0; i < length; i++) {
- hash ^= key[i];
- hash *= 16777619;
- }
- return hash;
-}
-
 ObjString* allocateString(char* string, int length){
     ObjString* stringOut = ALLOCATE_OBJ(ObjString, OBJ_STRING);
     stringOut->length = length;
     stringOut->chars = string;
 
-    tableSet(&vm.strings, stringOut, NIL_VAL);
 
     return stringOut;
 }
 
-ObjString* takeString(char* chars, int length){
-    uint32_t hash = hashString(chars, length);
-<<<<<<< Updated upstream
-    ObjString* interned = tableFindString(&vm.strings, chars, length, hash);
-    if(interned !=nullptr){
-        FREE_ARRAY(char, chars, length +1);
-        return interned;
-    }   
-    return allocateString(chars, length, hash);
-=======
+ObjString* takeString(char* chars, int length){  
     return allocateString(chars, length);
->>>>>>> Stashed changes
 }
 
 static Obj* allocateObject(size_t size, ObjType type) {
