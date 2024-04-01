@@ -1,6 +1,7 @@
 #include "value.h"
 
 #include <cstring>
+#include <iostream>
 
 using namespace std;
 
@@ -67,6 +68,28 @@ void printValue(Value value) {
         case VAL_NUMBER: printf("%g", AS_NUMBER(value)); break;
         case VAL_OBJ: printObject(value); break;
  }
+}
+
+void printObjectS(Value value){
+    switch(OBJ_TYPE(value)){
+        case OBJ_STRING: cout << string(AS_CSTRING(value)); break;
+    }
+}
+
+void printValues(Value value1, Value value2) {
+    switch (value1.type) {
+        case VAL_BOOL: cout << AS_BOOL(value1) ? "true" : "false"; break;
+        case VAL_NIL: cout << "nil"; break;
+        case VAL_NUMBER: cout << AS_NUMBER(value1); break;
+        case VAL_OBJ: printObjectS(value1); break;
+    }
+    switch (value2.type)
+    {
+        case VAL_BOOL: cout << AS_BOOL(value2) ? " true" : " false"; break;
+        case VAL_NIL: cout << " nil"; break;
+        case VAL_NUMBER: cout << " " << AS_NUMBER(value2); break;
+        case VAL_OBJ: cout << " "; printObjectS(value2); break;
+    }
 }
 
 

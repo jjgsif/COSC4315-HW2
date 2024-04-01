@@ -12,7 +12,7 @@ enum TokenType{
  TOKEN_LEFT_PAREN, TOKEN_RIGHT_PAREN,
  TOKEN_LEFT_BRACE, TOKEN_RIGHT_BRACE,
  TOKEN_COMMA, TOKEN_DOT, TOKEN_MINUS, TOKEN_PLUS,
- TOKEN_ENDLINE, TOKEN_SLASH, TOKEN_STAR,
+ TOKEN_ENDLINE, TOKEN_SLASH, TOKEN_STAR, TOKEN_COLON, TOKEN_TAB,
  // One or two character tokens.
  TOKEN_BANG, TOKEN_BANG_EQUAL,
  TOKEN_EQUAL, TOKEN_EQUAL_EQUAL,
@@ -90,9 +90,8 @@ static bool nextToken(char next){
 static void skipSpace(){
     for(;;){
         switch (*scanner.current){
-            case ' ':
+            case ' ': 
             case '\r':
-            case '\t':
                 scanner.current++;
                 break;
             case '#': 
@@ -161,6 +160,7 @@ static Token identifier(){
         case 'r': return makeToken(keywordToken(1,5,"eturn", TokenType::TOKEN_RETURN));
         case 'p': return makeToken(keywordToken(1,4,"rint", TokenType::TOKEN_PRINT));
         case 't': return makeToken(keywordToken(1,3,"rue", TokenType::TOKEN_TRUE));
+        case 'i': return makeToken(keywordToken(1,1,"f", TokenType::TOKEN_IF));
 
         default: return makeToken(TokenType::TOKEN_IDENTIFIER);
     
@@ -194,8 +194,8 @@ static Token scanToken(){
         //SYMBOLS
         case '(': return makeToken(TokenType::TOKEN_LEFT_PAREN);
         case ')': return makeToken(TokenType::TOKEN_RIGHT_PAREN);
-        case '{': return makeToken(TokenType::TOKEN_LEFT_BRACE);
-        case '}': return makeToken(TokenType::TOKEN_RIGHT_BRACE);
+        case ':': return makeToken(TokenType::TOKEN_COLON);
+        case '\t': return makeToken(TokenType::TOKEN_TAB);
         case '\n': scanner.line++; return makeToken(TokenType::TOKEN_ENDLINE);
         case ',': return makeToken(TokenType::TOKEN_COMMA);
         case '.': return makeToken(TokenType::TOKEN_DOT);

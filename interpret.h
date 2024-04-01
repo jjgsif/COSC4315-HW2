@@ -12,6 +12,11 @@ struct Parser
     Token previous;
     bool hadError;
     bool panicMode;
+
+};
+
+struct compiler{
+    int scopeDepth;
 };
 
 enum Precedence

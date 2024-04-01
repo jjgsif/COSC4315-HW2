@@ -121,8 +121,8 @@ static bool isFalsey(Value value)
 void concatenate()
 {
     ObjString *a, *b;
-    a = AS_STRING(pop());
     b = AS_STRING(pop());
+    a = AS_STRING(pop());
 
     int length = a->length + b->length;
     char *combined = ALLOCATE(char, length + 1);
@@ -231,33 +231,63 @@ static InterpretResult run()
             printf("\n");
             break;
         }
-        case OP_DEFINE_GLOBAL: {
-            string c = AS_CSTRING(vm.chunk->constants.values[*vm.ip++]);
-            try{
-            vm.variables.at(c) = peek(0);
-            pop();
+        case OP_CONCAT:
+        {   
+            Value b = pop();
+            Value a = pop(); 
+            printValues(a,b);
+            instruction = READ_BYTE();
+            cout << endl;
             break;
-            } catch (exception e){
+        }
+        case OP_DEFINE_GLOBAL:
+        {   
+
+            string c = AS_CSTRING(vm.chunk->constants.values[*vm.ip++]);
+
+            try
+            {   
+                
+                vm.variables.at(c) = peek(0);
+                pop();
+                break;
+            }
+            catch (exception e)
+            {
                 vm.variables.insert(pair<string, Value>(c, peek(0)));
+                break;
             }
         }
-        case OP_GET_GLOBAL:{
+        case OP_GET_GLOBAL:
+        {
             string v = AS_CSTRING(vm.chunk->constants.values[*vm.ip++]);
-            try{
+            try
+            {
                 push(vm.variables.at(v));
                 break;
-            }catch (exception e){
+            }
+            catch (exception e)
+            {
                 runtimeError("Undefined Variable name: ", v.c_str());
                 return INTERPRET_RUNTIME_ERR;
             }
         }
 
-        case OP_POP: pop(); break;
+        case OP_POP:
+            pop();
+            break;
         case OP_NOT:
             push(BOOL_VAL(isFalsey(pop())));
             break;
+
+        case OP_JUMP_IF_FALSE:
+        {
+            uint16_t offset = (vm.ip += 2, (uint16_t)((vm.ip[-2] << 8) | vm.ip[-1]));
+            if (isFalsey(peek(0)))
+                vm.ip += offset;
+            break;
         }
-        
+        }
     }
 }
 
