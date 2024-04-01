@@ -19,5 +19,8 @@ bool tableSet(hashT* table, ObjString* key, Value value);
 Entry* findEntry(Entry* entries, int capacity, ObjString* key);
 void adjustCapacity(hashT* table, int capacity);
 void tableAddAll(hashT* from, hashT* to);
+ObjString* tableFindString (hashT* table, const char* chars, int length, uint32_t hash);
 bool tableGet(hashT* , ObjString* , Value* );
 bool tableDelete(hashT*, ObjString*);
+
+#endif
