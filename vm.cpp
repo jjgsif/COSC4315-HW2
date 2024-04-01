@@ -165,8 +165,6 @@ static InterpretResult run()
             break;
         }
         case OP_RETURN:
-            printValue(pop());
-            cout << "\n";
             return INTERPRET_OK;
 
         case OP_NEGATE:
@@ -226,10 +224,33 @@ static InterpretResult run()
         case OP_DIVIDE:
             BINARY_OP(NUMBER_VAL, /);
             break;
+
+        case OP_PRINT:
+        {
+            printValue(pop());
+            printf("\n");
+            break;
+        }
+        case OP_DEFINE_GLOBAL: {
+            vm.variables.insert(pair<ObjString*, Value>(AS_STRING(vm.chunk->constants.values[*vm.ip++]), peek(0))); pop(); break;
+        }
+        case OP_GET_GLOBAL:{
+            ObjString* v = AS_STRING(READ_CONSTANT());
+            try{
+                push(vm.variables.at(v));
+                break;
+            }catch (exception e){
+                runtimeError("Undefined Variable name: ", v->chars);
+                return INTERPRET_RUNTIME_ERR;
+            }
+        }
+
+        case OP_POP: pop(); break;
         case OP_NOT:
             push(BOOL_VAL(isFalsey(pop())));
             break;
         }
+        
     }
 }
 

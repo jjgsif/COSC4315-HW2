@@ -63,6 +63,11 @@ static void error(const char* message);
 static uint8_t makeConstant(Value value);
 static void errorAtCurrent(const char* message);
 static void stringI();
+static void statement();
+static void declaration();
+static void variable();
+static void namedVariable(Token name);
+static uint8_t identifierConstant(Token* name) ;
 
 
 

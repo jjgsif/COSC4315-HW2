@@ -1,6 +1,12 @@
+<<<<<<< Updated upstream
 #include "value.h" //object.h
 #include "vm.h" // vm.h
 #include "assignment.h" //table.h
+=======
+#include "value.h"
+
+#include <cstring>
+>>>>>>> Stashed changes
 
 using namespace std;
 
@@ -41,7 +47,7 @@ ObjString* copyString(char* chars, int length){
     cString[length] = '\0';
 
 
-    return allocateString(cString, length, hash);
+    return allocateString(cString, length);
 }
 
 uint32_t hashString(const char* key, int length) {
@@ -53,11 +59,10 @@ uint32_t hashString(const char* key, int length) {
  return hash;
 }
 
-ObjString* allocateString(char* string, int length, uint32_t hash){
+ObjString* allocateString(char* string, int length){
     ObjString* stringOut = ALLOCATE_OBJ(ObjString, OBJ_STRING);
     stringOut->length = length;
     stringOut->chars = string;
-    stringOut->hash = hash;
 
     tableSet(&vm.strings, stringOut, NIL_VAL);
 
@@ -66,12 +71,16 @@ ObjString* allocateString(char* string, int length, uint32_t hash){
 
 ObjString* takeString(char* chars, int length){
     uint32_t hash = hashString(chars, length);
+<<<<<<< Updated upstream
     ObjString* interned = tableFindString(&vm.strings, chars, length, hash);
     if(interned !=nullptr){
         FREE_ARRAY(char, chars, length +1);
         return interned;
     }   
     return allocateString(chars, length, hash);
+=======
+    return allocateString(chars, length);
+>>>>>>> Stashed changes
 }
 
 static Obj* allocateObject(size_t size, ObjType type) {
@@ -89,9 +98,11 @@ void printValue(Value value) {
  }
 }
 
+
+
 void printObject(Value value){
     switch(OBJ_TYPE(value)){
-        case OBJ_STRING: cout << AS_CSTRING(value) << endl; break;
+        case OBJ_STRING: cout << "\'"+string(AS_CSTRING(value)) + "\'"; break;
     }
 }
 

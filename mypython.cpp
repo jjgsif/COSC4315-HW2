@@ -39,11 +39,12 @@ void console(){
         cout << "> ";
 
         if(!fgets(line, sizeof(line), stdin)) {
-            cout << "\n";
+            cout << "";
             break;
         }
 
         interpret(line);
+
     }
 }
 

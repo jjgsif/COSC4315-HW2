@@ -1,5 +1,6 @@
 #include "interpret.cpp"
 #include <iostream>
+#include <map>
 
 enum InterpretResult
 {
@@ -15,6 +16,7 @@ struct VM {
     Value* stackTop;
 
     Obj* objects;
+    map<ObjString*, Value> variables;
 };
 
 

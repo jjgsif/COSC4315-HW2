@@ -12,7 +12,7 @@ ParseRule rules[] = {
  [TokenType::TOKEN_DOT] = {NULL, NULL, PREC_NONE},
  [TokenType::TOKEN_MINUS] = {unary, binary, PREC_TERM},
  [TokenType::TOKEN_PLUS] = {NULL, binary, PREC_TERM},
- [TokenType::TOKEN_SEMICOLON] = {NULL, NULL, PREC_NONE},
+ [TokenType::TOKEN_ENDLINE] = {NULL, NULL, PREC_NONE},
  [TokenType::TOKEN_SLASH] = {NULL, binary, PREC_FACTOR},
  [TokenType::TOKEN_STAR] = {NULL, binary, PREC_FACTOR},
  [TokenType::TOKEN_BANG] = {unary, NULL, PREC_NONE},
@@ -23,7 +23,7 @@ ParseRule rules[] = {
  [TokenType::TOKEN_GREATER_EQUAL] =  {NULL, binary, PREC_COMPARISON},
  [TokenType::TOKEN_LESS] =  {NULL, binary, PREC_COMPARISON},
  [TokenType::TOKEN_LESS_EQUAL] =  {NULL, binary, PREC_COMPARISON},
- [TokenType::TOKEN_IDENTIFIER] = {NULL, NULL, PREC_NONE},
+ [TokenType::TOKEN_IDENTIFIER] = {variable, NULL, PREC_NONE},
  [TokenType::TOKEN_STRING] = {stringI, NULL, PREC_NONE},
  [TokenType::TOKEN_NUMBER] = {numberI, NULL, PREC_NONE},
  [TokenType::TOKEN_AND] = {NULL, NULL, PREC_NONE},
@@ -51,7 +51,14 @@ Parser parser;
 
 Chunk* compilingChunk;
 
+static void namedVariable(Token name) {
+ uint8_t arg = identifierConstant(&name);
+ emitBytes(OP_GET_GLOBAL, arg);
+}
 
+static void variable(){
+    namedVariable(parser.previous);
+}
 
 static Chunk* currentChunk(){
     return compilingChunk;
@@ -206,16 +213,78 @@ static uint8_t makeConstant(Value value){
     return (uint8_t)constant;
 }
 
+static void printStatement() {
+ expression();
+ consume(TOKEN_ENDLINE, "Expect ';' after value.");
+ emitByte(OP_PRINT);
+}
+
+static bool check(TokenType type) {
+ return parser.current.type == type;
+}
+
 static void endCompiler(){
     emitReturn();
 }
 
+static bool match(TokenType type) {
+ if (!check(type)) return false;
+ advance();
+ return true;
+}
 
+static void expressionStatement() {
+ expression();
+ consume(TOKEN_ENDLINE, "Expect ';' after expression.");
+ emitByte(OP_POP);
+}
+
+static void statement() {
+ if (match(TOKEN_PRINT)) {
+    printStatement();
+ } else{
+    expressionStatement();
+ }
+ if(!match(TOKEN_EOF) && !match(TOKEN_ENDLINE)){
+    printStatement();
+ }
+ 
+}
+
+static void defineVariable(uint8_t global) {
+ emitBytes(OP_DEFINE_GLOBAL, global);
+}
+
+static uint8_t identifierConstant(Token* name) {
+ return makeConstant(OBJ_VAL(copyString(name->start,
+ name->length)));
+}
 
 
 
 static void expression(){
     parsePrecedence(PREC_ASSIGNMENT);
+}
+
+static void varDeclaration(){
+    uint8_t global = identifierConstant(&parser.current);
+    
+    if(match(TOKEN_EQUAL)){
+        expression();
+    } else {
+        emitByte(OP_NIL);
+    }
+    consume(TOKEN_ENDLINE,"Error");
+    
+    defineVariable(global);
+}
+
+static void declaration() {
+    if(match(TOKEN_IDENTIFIER)){
+        varDeclaration();
+    } else {
+        statement();
+    }
 }
 
 
@@ -227,8 +296,11 @@ bool compile(char* sourceCode, Chunk* chunk){
     parser.hadError = false;
     parser.panicMode = false;
     advance();
-    expression();
-    consume(TokenType::TOKEN_EOF, "Expect end of expression.");
+    // expression();
+    // consume(TokenType::TOKEN_ENDLINE, "Expect end of expression.");
+    while (!match(TOKEN_EOF)) {
+        declaration();
+    }
     endCompiler();
     return !parser.hadError;
 }

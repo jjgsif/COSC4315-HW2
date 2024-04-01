@@ -12,7 +12,7 @@ enum TokenType{
  TOKEN_LEFT_PAREN, TOKEN_RIGHT_PAREN,
  TOKEN_LEFT_BRACE, TOKEN_RIGHT_BRACE,
  TOKEN_COMMA, TOKEN_DOT, TOKEN_MINUS, TOKEN_PLUS,
- TOKEN_SEMICOLON, TOKEN_SLASH, TOKEN_STAR,
+ TOKEN_ENDLINE, TOKEN_SLASH, TOKEN_STAR,
  // One or two character tokens.
  TOKEN_BANG, TOKEN_BANG_EQUAL,
  TOKEN_EQUAL, TOKEN_EQUAL_EQUAL,
@@ -93,12 +93,6 @@ static void skipSpace(){
             case ' ':
             case '\r':
             case '\t':
-                scanner.current++;
-                break;
-            case '\n':
-                //cout << scanner.line << endl;
-                
-                scanner.line++;
                 scanner.current++;
                 break;
             case '#': 
@@ -202,7 +196,7 @@ static Token scanToken(){
         case ')': return makeToken(TokenType::TOKEN_RIGHT_PAREN);
         case '{': return makeToken(TokenType::TOKEN_LEFT_BRACE);
         case '}': return makeToken(TokenType::TOKEN_RIGHT_BRACE);
-        case ':': return makeToken(TokenType::TOKEN_SEMICOLON);
+        case '\n': scanner.line++; return makeToken(TokenType::TOKEN_ENDLINE);
         case ',': return makeToken(TokenType::TOKEN_COMMA);
         case '.': return makeToken(TokenType::TOKEN_DOT);
         case '-': return makeToken(TokenType::TOKEN_MINUS);
