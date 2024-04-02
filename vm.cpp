@@ -137,6 +137,7 @@ void concatenate()
 
 #define READ_BYTE() (*vm.ip++)
 #define READ_CONSTANT() (vm.chunk->constants.values[READ_BYTE()])
+#define READ_SHORT() ((vm.ip += 2, (uint16_t)((vm.ip[-2] << 8) | vm.ip[-1])))
 static InterpretResult run()
 {
 
@@ -232,29 +233,31 @@ static InterpretResult run()
             break;
         }
         case OP_CONCAT:
-        {   
+        {
             Value b = pop();
-            Value a = pop(); 
-            printValues(a,b);
+            Value a = pop();
+            printValues(a, b);
             instruction = READ_BYTE();
             cout << endl;
             break;
         }
         case OP_DEFINE_GLOBAL:
-        {   
+        {
 
             string c = AS_CSTRING(vm.chunk->constants.values[*vm.ip++]);
 
             try
-            {   
-                
+            {
+
                 vm.variables.at(c) = peek(0);
+                // cout << "ASSIGNED " << c << ": " << AS_NUMBER(peek(0)) << endl;
                 pop();
                 break;
             }
             catch (exception e)
             {
                 vm.variables.insert(pair<string, Value>(c, peek(0)));
+                // cout << "ASSIGNED " << c << ": " << AS_NUMBER(peek(0)) << endl;
                 break;
             }
         }
@@ -282,9 +285,16 @@ static InterpretResult run()
 
         case OP_JUMP_IF_FALSE:
         {
-            uint16_t offset = (vm.ip += 2, (uint16_t)((vm.ip[-2] << 8) | vm.ip[-1]));
+            uint16_t offset = READ_SHORT();
             if (isFalsey(peek(0)))
                 vm.ip += offset;
+            break;
+        }
+
+        case OP_JUMP:
+        {
+            uint16_t offset = READ_SHORT();
+            vm.ip += offset;
             break;
         }
         }

@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "chunk.h"
+#include "chunk.cpp"
 
 static int constantInstruction(const char* name, Chunk* chunk, int offset);
 static int simpleInstruction(const char* name, int offset);

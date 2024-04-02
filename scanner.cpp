@@ -28,6 +28,9 @@ enum TokenType{
  TOKEN_ERROR, 
  TOKEN_EOF
 };
+
+int consecutiveSpaces = 0;
+
 struct Scanner {
     int line;
 
@@ -90,7 +93,8 @@ static bool nextToken(char next){
 static void skipSpace(){
     for(;;){
         switch (*scanner.current){
-            case ' ': 
+            case ' ': consecutiveSpaces += 1; scanner.current++; break;
+            case ':': 
             case '\r':
                 scanner.current++;
                 break;
@@ -161,6 +165,8 @@ static Token identifier(){
         case 'p': return makeToken(keywordToken(1,4,"rint", TokenType::TOKEN_PRINT));
         case 't': return makeToken(keywordToken(1,3,"rue", TokenType::TOKEN_TRUE));
         case 'i': return makeToken(keywordToken(1,1,"f", TokenType::TOKEN_IF));
+        case 'e': return makeToken(keywordToken(1,3, "lse", TOKEN_ELSE));
+        
 
         default: return makeToken(TokenType::TOKEN_IDENTIFIER);
     
@@ -179,7 +185,14 @@ static Token number(){
 
 static Token scanToken(){
     skipSpace();
+    if(consecutiveSpaces == 4){
+        consecutiveSpaces = 0;
+        return makeToken(TOKEN_TAB);
+    }
 
+    if(*(scanner.current) != ' '){
+        consecutiveSpaces = 0;
+    }
 
     scanner.start = scanner.current;
 
@@ -190,12 +203,9 @@ static Token scanToken(){
     if(isAlpha(c)) return identifier();
     if(isDigit(c)) return number();
     switch (c) {
-
         //SYMBOLS
         case '(': return makeToken(TokenType::TOKEN_LEFT_PAREN);
         case ')': return makeToken(TokenType::TOKEN_RIGHT_PAREN);
-        case ':': return makeToken(TokenType::TOKEN_COLON);
-        case '\t': return makeToken(TokenType::TOKEN_TAB);
         case '\n': scanner.line++; return makeToken(TokenType::TOKEN_ENDLINE);
         case ',': return makeToken(TokenType::TOKEN_COMMA);
         case '.': return makeToken(TokenType::TOKEN_DOT);

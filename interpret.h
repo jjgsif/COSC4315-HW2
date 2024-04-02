@@ -73,6 +73,9 @@ static void declaration();
 static void variable();
 static void namedVariable(Token name);
 static uint8_t identifierConstant(Token* name) ;
+static void block();
+static void ifStatement();
+static void varDeclaration();
 
 
 

@@ -1,11 +1,12 @@
 #include "interpret.h"
 
 using namespace std;
+bool ifDone = false;
 
 ParseRule rules[] = {
     [TokenType::TOKEN_LEFT_PAREN] = {grouping, NULL, PREC_NONE},
     [TokenType::TOKEN_RIGHT_PAREN] = {NULL, NULL, PREC_NONE},
-    [TokenType::TOKEN_LEFT_BRACE] = {NULL, NULL, PREC_NONE},
+    [TokenType::TOKEN_LEFT_BRACE] = {block, NULL, PREC_NONE},
     [TokenType::TOKEN_RIGHT_BRACE] = {NULL, NULL, PREC_NONE},
     [TokenType::TOKEN_COMMA] = {NULL, binary, PREC_TERM},
     [TokenType::TOKEN_DOT] = {NULL, NULL, PREC_NONE},
@@ -92,10 +93,10 @@ static void errorAt(Token *token, const char *message)
 static void advance()
 {
     parser.previous = parser.current;
-
     for (;;)
     {
         parser.current = scanToken();
+        
         if (parser.current.type != TokenType::TOKEN_ERROR)
             break;
 
@@ -116,6 +117,7 @@ static void consume(TokenType type, const char *message)
 static void emitByte(uint8_t byte)
 {
     writeChunk(currentChunk(), byte, parser.previous.line);
+    
 }
 
 static void emitBytes(uint8_t byte1, uint8_t byte2)
@@ -143,12 +145,20 @@ static int emitJump(uint8_t instruction) {
 
 static void patchJump(int offset) {
  int jump = currentChunk()->count - offset - 2;
+ //cout << jump << endl;
+ if(ifDone){
+    if(jump == 5){
+        jump+=4;
+    }
+ }
  if (jump > UINT16_MAX) {
  error("Too much code to jump over.");
  }
- currentChunk()->code[offset] = (jump >> 8) & 0xff;
+ currentChunk()->code[offset] = (jump >> 8) & 0xff; 
  currentChunk()->code[offset + 1] = jump & 0xff;
+ ifDone = true;
 }
+
 
 static void literal()
 {
@@ -318,34 +328,24 @@ static void expressionStatement()
     consume(TOKEN_ENDLINE, "Expect ';' after expression.");
     emitByte(OP_POP);
 }
-
-static void ifStatement(){
-    
-    expression();
-    consume(TOKEN_COLON, "Expect ')' after condition.");
-    int thenJump = emitJump(OP_JUMP_IF_FALSE);
-    statement();
-    patchJump(thenJump);
+static void block(){
+    declaration();
 }
 
-static void block() {
-    while (!check(TOKEN_TAB)) {
-        declaration();
-    }
-    consume(TOKEN_ENDLINE, "Expect '}' after block.");
-}
+
 
 static void statement()
 {
-    if (match(TOKEN_PRINT))
+    if(match(TOKEN_TAB)){
+        //cout << "TAB" << endl;
+        block();
+    }
+    
+    else if (match(TOKEN_IF)){
+        ifStatement();
+    } else if (match(TOKEN_PRINT))
     {
         printStatement();
-    }
-    else if (match(TOKEN_IF))
-    {
-        ifStatement();
-    } else if (match(TOKEN_TAB)){
-        block();
     }
     else if (!match(TOKEN_EOF) && !match(TOKEN_ENDLINE))
     {
@@ -370,16 +370,18 @@ static void expression()
     parsePrecedence(PREC_ASSIGNMENT);
 }
 
+
+
 static void varDeclaration()
 {
     uint8_t global = identifierConstant(&parser.previous);
 
-    if (match(TOKEN_EQUAL))
+    if (check(TOKEN_EQUAL))
     {
+        consume(TOKEN_EQUAL,"");
         expression();
     }
-    else
-    {
+    else{
         emitByte(OP_NIL);
     }
     consume(TOKEN_ENDLINE, "Error");
@@ -396,6 +398,19 @@ static void declaration()
     {
         statement();
     }
+}
+
+static void ifStatement(){
+    
+    expression();
+    int thenJump = emitJump(OP_JUMP_IF_FALSE); 
+    emitByte(OP_POP);
+    declaration();
+    int elseJump = emitJump(OP_JUMP);
+    emitByte(OP_POP);
+    patchJump(thenJump);
+    if (match(TOKEN_ELSE)) {declaration();}
+    patchJump(elseJump);
 }
 
 bool compile(char *sourceCode, Chunk *chunk)
